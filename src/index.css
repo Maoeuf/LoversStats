@@ -1,0 +1,94 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 6%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 142 69% 58%;
+    --primary-foreground: 0 0% 6%;
+
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 64%;
+
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 142 69% 58%;
+
+    --radius: 8px;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background: #0a0a0a;
+    min-height: 100vh;
+    font-family: 'Circular', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  /* Custom scrollbar - Spotify style */
+  ::-webkit-scrollbar {
+    width: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+    background-clip: content-box;
+  }
+}
+
+@layer components {
+  .spotify-card {
+    @apply bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 hover:bg-zinc-800/50 transition-all duration-300;
+  }
+
+  .spotify-button {
+    @apply bg-green-500 hover:bg-green-400 text-black font-semibold rounded-full px-8 py-3 transition-all duration-200 hover:scale-105;
+  }
+
+  .spotify-text {
+    @apply text-white;
+  }
+
+  .spotify-muted {
+    @apply text-zinc-400;
+  }
+
+  .spotify-gradient {
+    background: linear-gradient(135deg, rgba(30, 215, 96, 0.1) 0%, rgba(0, 0, 0, 0.9) 100%);
+  }
+}
