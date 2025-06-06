@@ -40,7 +40,7 @@ export class ConversationParser {
     const messages: Message[] = [];
     
     // Format exact: [15/05/2025, 09:40] Mehdi : message
-    const messageRegex = /^\[(\d{1,2}\/\d{1,2}\/\d{4})\s*,?\s*(\d{1,2}:\d{2})\]\s*([^:]+?)\s*:\s*(.+)$/;
+    const messageRegex = /^\[(\d{1,2}\/\d{1,2}\/\d{4}),\s*(\d{1,2}:\d{2})\]\s*([^:]+?)\s*:\s*(.+)$/;
     
     lines.forEach((line, index) => {
       console.log(`Processing line ${index}:`, line);
@@ -50,7 +50,6 @@ export class ConversationParser {
         console.log('Skipping platform header:', line.trim());
         return;
       }
-      console.log([...line].map(c => `${c} (${c.charCodeAt(0)})`).join(' | '));
 
       const match = line.match(messageRegex);
       if (match) {
@@ -74,12 +73,104 @@ export class ConversationParser {
         }
       } else {
         console.log('Line did not match regex:', line);
-        console.log('Regex test result:', messageRegex.test(line));
       }
     });
 
     console.log('Total messages parsed:', messages.length);
     return this.createConversation(messages, fileName, platform);
+  }
+
+  static parseMultiFormat(content: string, fileName: string): Conversation[] {
+    console.log('Parsing multi-format file:', fileName);
+    
+    const lines = content.replace(/[\r\u200E\u200F\u202A-\u202E\uFEFF]/g, '').split('\n');
+    const conversations: Conversation[] = [];
+    
+    // Pattern pour détecter les sections de conversation: [Platform](Name)
+    const sectionRegex = /^\[(\w+)\]\(([^)]+)\)$/;
+    const messageRegex = /^\[(\d{1,2}\/\d{1,2}\/\d{4}),\s*(\d{1,2}:\d{2})\]\s*([^:]+?)\s*:\s*(.+)$/;
+    
+    let currentSection: { platform: string; name: string } | null = null;
+    let currentMessages: Message[] = [];
+    let messageIndex = 0;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      // Skip empty lines and [Multi] header
+      if (!line || line === '[Multi]') {
+        continue;
+      }
+      
+      // Check if it's a new section header
+      const sectionMatch = line.match(sectionRegex);
+      if (sectionMatch) {
+        // Save previous section if it exists
+        if (currentSection && currentMessages.length > 0) {
+          const platform = this.mapPlatformName(currentSection.platform);
+          const conversation = this.createConversation(
+            currentMessages, 
+            `${currentSection.name}`, 
+            platform
+          );
+          conversation.customName = currentSection.name;
+          conversations.push(conversation);
+        }
+        
+        // Start new section
+        currentSection = {
+          platform: sectionMatch[1],
+          name: sectionMatch[2]
+        };
+        currentMessages = [];
+        console.log('Started new section:', currentSection);
+        continue;
+      }
+      
+      // Try to parse as message if we're in a section
+      if (currentSection) {
+        const messageMatch = line.match(messageRegex);
+        if (messageMatch) {
+          const [, dateStr, timeStr, sender, content] = messageMatch;
+          const timestamp = this.parseDateTime(dateStr, timeStr);
+          
+          if (timestamp && content.trim()) {
+            const message = {
+              id: `${currentSection.platform}-${messageIndex++}`,
+              timestamp,
+              sender: sender.trim(),
+              content: content.trim(),
+              type: 'text' as const
+            };
+            currentMessages.push(message);
+            console.log('Added message to section:', message);
+          }
+        }
+      }
+    }
+    
+    // Don't forget the last section
+    if (currentSection && currentMessages.length > 0) {
+      const platform = this.mapPlatformName(currentSection.platform);
+      const conversation = this.createConversation(
+        currentMessages, 
+        `${currentSection.name}`, 
+        platform
+      );
+      conversation.customName = currentSection.name;
+      conversations.push(conversation);
+    }
+    
+    console.log(`Parsed ${conversations.length} conversations from multi-format file`);
+    return conversations;
+  }
+
+  static mapPlatformName(platformName: string): 'whatsapp' | 'instagram' | 'discord' {
+    const normalized = platformName.toLowerCase();
+    if (normalized === 'whatsapp') return 'whatsapp';
+    if (normalized === 'insta' || normalized === 'instagram') return 'instagram';
+    if (normalized === 'discord') return 'discord';
+    return 'whatsapp'; // default fallback
   }
 
   private static parseDateTime(dateStr: string, timeStr: string): Date | null {
@@ -164,14 +255,16 @@ export class ConversationParser {
     };
   }
 
-  static detectPlatform(content: string): 'whatsapp' | 'instagram' | 'discord' | 'unknown' {
+  static detectPlatform(content: string): 'whatsapp' | 'instagram' | 'discord' | 'multi' | 'unknown' {
     console.log('Detecting platform from content');
     
-    // Check for platform header first
     const lines = content.split('\n').filter(line => line.trim());
     if (lines.length > 0) {
       const firstLine = lines[0].trim();
       console.log('First line:', firstLine);
+      
+      // Check for multi-format first
+      if (firstLine === '[Multi]') return 'multi';
       
       if (firstLine === '[WhatsApp]') return 'whatsapp';
       if (firstLine === '[Insta]') return 'instagram';
@@ -189,22 +282,24 @@ export class ConversationParser {
     return 'unknown';
   }
 
-  static parseFile(content: string, fileName: string): Conversation | null {
+  static parseFile(content: string, fileName: string): Conversation[] {
     console.log('Parsing file:', fileName);
     
     const platform = this.detectPlatform(content);
     console.log('Detected platform:', platform);
     
     switch (platform) {
+      case 'multi':
+        return this.parseMultiFormat(content, fileName);
       case 'whatsapp':
-        return this.parseWhatsApp(content, fileName);
+        return [this.parseWhatsApp(content, fileName)];
       case 'instagram':
-        return this.parseInstagram(content, fileName);
+        return [this.parseInstagram(content, fileName)];
       case 'discord':
-        return this.parseDiscord(content, fileName);
+        return [this.parseDiscord(content, fileName)];
       default:
         console.log('Unknown platform, cannot parse');
-        return null;
+        return [];
     }
   }
 

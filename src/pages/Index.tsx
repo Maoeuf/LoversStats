@@ -16,9 +16,9 @@ const Index = () => {
     const newConversations: Conversation[] = [];
     
     for (const file of files) {
-      const conversation = ConversationParser.parseFile(file.content, file.name);
-      if (conversation) {
-        newConversations.push(conversation);
+      const parsedConversations = ConversationParser.parseFile(file.content, file.name);
+      if (parsedConversations.length > 0) {
+        newConversations.push(...parsedConversations);
       } else {
         toast({
           title: "Format non reconnu",
@@ -30,6 +30,13 @@ const Index = () => {
 
     if (newConversations.length > 0) {
       setConversations(prev => [...prev, ...newConversations]);
+      
+      const fileCount = files.length;
+      const convCount = newConversations.length;
+      toast({
+        title: "Conversations chargées",
+        description: `${convCount} conversation(s) chargée(s) depuis ${fileCount} fichier(s)`
+      });
     }
   };
 
