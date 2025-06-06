@@ -17,14 +17,14 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFilesUploaded }) => {
     const validFiles: Array<{ name: string; content: string }> = [];
 
     for (const file of Array.from(files)) {
-      if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+      if (file.type === 'text/plain' || file.name.endsWith('.txt') || file.name.endsWith('.lov')) {
         try {
           const content = await file.text();
           validFiles.push({ name: file.name, content });
         } catch (error) {
           toast({
             title: "Erreur de lecture",
-            description: `Impossible de lire le fichier ${file.name}`,
+            description: `Le fichier ${file.name} n'est pas un fichier texte supporté (.txt ou .lov)`,
             variant: "destructive"
           });
         }
@@ -92,7 +92,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFilesUploaded }) => {
           id="file-input"
           type="file"
           multiple
-          accept=".txt"
+          accept=".txt,.lov"
           onChange={handleFileInput}
           className="hidden"
         />
@@ -110,7 +110,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFilesUploaded }) => {
               Ajouter des conversations
             </h3>
             <p className="spotify-muted text-sm">
-              Glissez-déposez vos fichiers .txt
+              Glissez-déposez vos fichiers .lov
             </p>
           </div>
           <Button size="sm" className="spotify-button">
