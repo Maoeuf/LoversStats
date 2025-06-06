@@ -86,6 +86,8 @@ const Index = () => {
   const totalMessages = conversations.reduce((sum, conv) => sum + conv.messageCount, 0);
   const totalWords = conversations.reduce((sum, conv) => sum + conv.wordCount, 0);
 
+  const gitCommit = import.meta.env.VITE_GIT_COMMIT || 'dev';
+
   if (selectedConversation) {
     return (
       <div className="min-h-screen bg-background">
@@ -101,6 +103,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Git commit reference in top right */}
+      <div className="absolute top-4 right-4 z-10">
+        <span className="spotify-muted text-xs">
+          {gitCommit.substring(0, 7)}
+        </span>
+      </div>
       {/* Spotify-style gradient header */}
       <div className="spotify-gradient">
         <div className="container mx-auto px-6 py-12">
