@@ -87,6 +87,7 @@ const Index = () => {
   const totalWords = conversations.reduce((sum, conv) => sum + conv.wordCount, 0);
 
   const gitCommit = import.meta.env.VITE_GIT_COMMIT || 'dev';
+  console.log("Git commit:", import.meta.env.VITE_GIT_COMMIT);
 
   if (selectedConversation) {
     return (

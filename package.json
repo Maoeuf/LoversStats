@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "cross-env VITE_GIT_COMMIT=$(git rev-parse HEAD) vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint ."
@@ -43,6 +43,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
+    "cross-env": "^7.0.3",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.3.0",
     "input-otp": "^1.2.4",
