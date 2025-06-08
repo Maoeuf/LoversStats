@@ -164,9 +164,32 @@ const ConversationDetail: React.FC<ConversationDetailProps> = ({
           </CardHeader>
 
           <CardContent className="space-y-6">
-            <div className="flex justify-left items-center gap-6">
+            <div className="space-y-6">
+              {/* Quick Stats */}
+              <Card className="spotify-card p-5 mb-auto">
+                <div className="grid grid-cols-2">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-400">
+                      {duration}
+                    </div>
+                    <div className="text-sm spotify-muted flex items-center justify-center">
+                      <Calendar className="h-3 w-3 mr-1" />
+                      Jours
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-400">
+                      {avgMessagesPerDay}
+                    </div>
+                    <div className="text-sm spotify-muted flex items-center justify-center">
+                      <Clock className="h-3 w-3 mr-1" />
+                      Msgs/jour
+                    </div>
+                  </div>
+                </div>
+              </Card>
               {/* Participants Stats */}
-              <Card className="spotify-card w-[100%] py-2">
+              <Card className="col-span-3 spotify-card py-2">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2 spotify-text">
                     <Users className="h-5 w-5 text-blue-500" />
@@ -211,29 +234,6 @@ const ConversationDetail: React.FC<ConversationDetailProps> = ({
                       })}
                   </div>
                 </CardContent>
-              </Card>
-              {/* Quick Stats */}
-              <Card className="spotify-card w-[170px] p-5 y-[100%]">
-                <div className="space-y-5">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-400">
-                      {duration}
-                    </div>
-                    <div className="text-sm spotify-muted flex items-center justify-center">
-                      <Calendar className="h-3 w-3 mr-1" />
-                      Jours
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-400">
-                      {avgMessagesPerDay}
-                    </div>
-                    <div className="text-sm spotify-muted flex items-center justify-center">
-                      <Clock className="h-3 w-3 mr-1" />
-                      Msgs/jour
-                    </div>
-                  </div>
-                </div>
               </Card>
             </div>
             {/* Dates */}
