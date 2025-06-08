@@ -275,7 +275,7 @@ const ConversationDetail: React.FC<ConversationDetailProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4 max-h-[65vh] overflow-y-auto">
+          <div className="space-y-4 max-h-[65vh] overflow-y-auto overflow-x-hidden">
             {filteredMessages.length === 0 ? (
               <div className="text-center py-8 spotify-muted">
                 Aucun message trouvé
