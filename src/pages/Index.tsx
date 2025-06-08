@@ -1,199 +1,453 @@
+import React, { useState, useCallback, useEffect } from "react";
+import { BarChart3, MessagesSquare, Plus, Trash2, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
+import FileUpload from "@/components/FileUpload";
+import ConversationList from "@/components/ConversationList";
+import ConversationDetail from "@/components/ConversationDetail";
+import GlobalSearch from "@/components/GlobalSearch";
+import TouchGestures from "@/components/TouchGestures";
+import { ConversationParser, Conversation } from "@/utils/conversationParser";
+import AppMenu from "@/components/AppMenu";
+import { Header } from "@radix-ui/react-accordion";
 
-import React, { useState } from 'react';
-import { MessageSquare, BarChart3, FileText, Weight } from 'lucide-react';
-import FileUpload from '@/components/FileUpload';
-import ConversationList from '@/components/ConversationList';
-import ConversationDetail from '@/components/ConversationDetail';
-import { Conversation, ConversationParser } from '@/utils/conversationParser';
-import { useToast } from '@/hooks/use-toast';
+const STORAGE_KEY = "loversstats";
 
 const Index = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [selectedConversation, setSelectedConversation] =
+    useState<Conversation | null>(null);
+  const [error, setError] = useState<string>("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [messageExporterOpen, setMessageExporterOpen] = useState(false);
   const { toast } = useToast();
 
-  const handleFilesUploaded = async (files: Array<{ name: string; content: string }>) => {
-    const newConversations: Conversation[] = [];
-    
-    for (const file of files) {
-      const parsedConversations = ConversationParser.parseFile(file.content, file.name);
-      if (parsedConversations.length > 0) {
-        newConversations.push(...parsedConversations);
-      } else {
-        toast({
-          title: "Format non reconnu",
-          description: `Impossible de parser le fichier ${file.name}. Vérifiez le format.`,
-          variant: "destructive"
-        });
+  // Load conversations from localStorage on startup
+  useEffect(() => {
+    const savedConversations = localStorage.getItem(STORAGE_KEY);
+    if (savedConversations) {
+      try {
+        const parsed = JSON.parse(savedConversations);
+        const restoredConversations = parsed.map((conv: any) => ({
+          ...conv,
+          startDate: new Date(conv.startDate),
+          endDate: new Date(conv.endDate),
+          messages: conv.messages.map((msg: any) => ({
+            ...msg,
+            timestamp: new Date(msg.timestamp),
+          })),
+        }));
+        setConversations(restoredConversations);
+      } catch (error) {
+        console.error("Error restoring conversations:", error);
+        localStorage.removeItem(STORAGE_KEY);
       }
     }
+  }, []);
 
-    if (newConversations.length > 0) {
-      setConversations(prev => [...prev, ...newConversations]);
-      
-      const fileCount = files.length;
-      const convCount = newConversations.length;
-      toast({
-        title: "Conversations chargées",
-        description: `${convCount} conversation(s) chargée(s) depuis ${fileCount} fichier(s)`
+  // Save conversations to localStorage whenever they change
+  useEffect(() => {
+    if (conversations.length > 0) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
+    }
+  }, [conversations]);
+
+  const mergeParticipants = useCallback(
+    (conversation: Conversation): Conversation => {
+      const mergedMessages = conversation.messages.map((message) => {
+        let newSender = message.sender;
+
+        if (
+          (newSender.toLowerCase().includes("jas") ||
+            newSender.includes("Jas")) &&
+          newSender !== "Jas"
+        ) {
+          newSender = "Jas";
+        }
+
+        if (
+          (newSender.toLowerCase().includes("mao") ||
+            newSender.includes("Mao")) &&
+          newSender !== "Mao" &&
+          newSender !== "Meta AI"
+        ) {
+          newSender = "Mao";
+        }
+
+        return { ...message, sender: newSender };
       });
-    }
-  };
 
+      const uniqueParticipants = [
+        ...new Set(mergedMessages.map((msg) => msg.sender)),
+      ];
 
-  const handleConversationSelect = (conversation: Conversation) => {
-    setSelectedConversation(conversation);
-  };
+      return {
+        ...conversation,
+        messages: mergedMessages,
+        participants: uniqueParticipants,
+      };
+    },
+    []
+  );
 
-  const handleConversationRename = (conversationId: string, newName: string) => {
-    setConversations(prev => 
-      prev.map(conv => 
-        conv.id === conversationId 
-          ? { ...conv, customName: newName }
-          : conv
-      )
-    );
-    
-    if (selectedConversation?.id === conversationId) {
-      setSelectedConversation(prev => 
-        prev ? { ...prev, customName: newName } : null
+  const isDuplicateConversation = useCallback(
+    (newConv: Conversation) => {
+      return conversations.some(
+        (existingConv) =>
+          existingConv.name === newConv.name &&
+          existingConv.platform === newConv.platform &&
+          existingConv.messageCount === newConv.messageCount &&
+          Math.abs(
+            new Date(existingConv.startDate).getTime() -
+              new Date(newConv.startDate).getTime()
+          ) < 86400000
       );
-    }
+    },
+    [conversations]
+  );
 
-    toast({
-      title: "Conversation renommée",
-      description: `La conversation a été renommée en "${newName}"`
-    });
-  };
+  const handleFilesUploaded = useCallback(
+    (files: Array<{ name: string; content: string }>) => {
+      let addedCount = 0;
+      let duplicateCount = 0;
 
-  const handleConversationDelete = (conversationId: string) => {
-    setConversations(prev => prev.filter(conv => conv.id !== conversationId));
-    
-    if (selectedConversation?.id === conversationId) {
+      files.forEach((file) => {
+        try {
+          const newConversations = ConversationParser.parseFile(
+            file.content,
+            file.name
+          );
+          newConversations.forEach((newConversation) => {
+            const mergedConversation = mergeParticipants(newConversation);
+
+            if (!isDuplicateConversation(mergedConversation)) {
+              setConversations((prev) => [...prev, mergedConversation]);
+              addedCount++;
+            } else {
+              duplicateCount++;
+            }
+          });
+          setError("");
+        } catch (error) {
+          console.error("Error processing file:", error);
+          setError(
+            `Error processing file ${file.name}: ${
+              error instanceof Error ? error.message : "Unknown error"
+            }`
+          );
+        }
+      });
+
+      if (addedCount > 0) {
+        toast({
+          title: "Fichiers chargés",
+          description: `${addedCount} conversation(s) ajoutée(s)${
+            duplicateCount > 0 ? ` (${duplicateCount} doublons ignorés)` : ""
+          }`,
+          duration: 5000,
+        });
+      } else if (duplicateCount > 0) {
+        toast({
+          title: "Aucune nouvelle conversation",
+          description: "Toutes les conversations étaient déjà importées",
+          variant: "destructive",
+          duration: 5000,
+        });
+      }
+    },
+    [mergeParticipants, isDuplicateConversation, toast]
+  );
+
+  const handleFileInput = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.multiple = true;
+    input.accept = ".txt,.lov";
+
+    input.onchange = async (e) => {
+      const files = (e.target as HTMLInputElement).files;
+      if (files && files.length > 0) {
+        const validFiles: Array<{ name: string; content: string }> = [];
+
+        for (const file of Array.from(files)) {
+          if (
+            file.type === "text/plain" ||
+            file.name.endsWith(".txt") ||
+            file.name.endsWith(".lov")
+          ) {
+            try {
+              const content = await file.text();
+              validFiles.push({ name: file.name, content });
+            } catch (error) {
+              toast({
+                title: "Erreur de lecture",
+                description: `Impossible de lire le fichier ${file.name}`,
+                variant: "destructive",
+                duration: 5000,
+              });
+            }
+          }
+        }
+
+        if (validFiles.length > 0) {
+          handleFilesUploaded(validFiles);
+        }
+      }
+    };
+
+    input.click();
+  }, [handleFilesUploaded, toast]);
+
+  const handleConversationSelect = useCallback((conversation: Conversation) => {
+    setSelectedConversation(conversation);
+  }, []);
+
+  const handleConversationRename = useCallback(
+    (conversationId: string, newName: string) => {
+      setConversations((prev) =>
+        prev.map((conv) =>
+          conv.id === conversationId ? { ...conv, customName: newName } : conv
+        )
+      );
+
+      if (selectedConversation?.id === conversationId) {
+        setSelectedConversation((prev) =>
+          prev ? { ...prev, customName: newName } : null
+        );
+      }
+    },
+    [selectedConversation]
+  );
+
+  const handleConversationDelete = useCallback(
+    (conversationId: string) => {
+      setConversations((prev) =>
+        prev.filter((conv) => conv.id !== conversationId)
+      );
+
+      if (selectedConversation?.id === conversationId) {
+        setSelectedConversation(null);
+      }
+    },
+    [selectedConversation]
+  );
+
+  const handleClearAll = useCallback(() => {
+    if (
+      confirm(
+        "Êtes-vous sûr de vouloir supprimer toutes les conversations ? Cette action est irréversible."
+      )
+    ) {
+      setConversations([]);
       setSelectedConversation(null);
+      localStorage.removeItem(STORAGE_KEY);
     }
+  }, []);
 
-    toast({
-      title: "Conversation supprimée",
-      description: "La conversation a été supprimée avec succès"
-    });
-  };
-
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     setSelectedConversation(null);
-  };
+  }, []);
 
-  const totalMessages = conversations.reduce((sum, conv) => sum + conv.messageCount, 0);
-  const totalWords = conversations.reduce((sum, conv) => sum + conv.wordCount, 0);
+  const handleSearchResultSelect = useCallback(
+    (result: any) => {
+      const conversation = conversations.find(
+        (conv) => conv.id === result.conversationId
+      );
+      if (conversation) {
+        setSelectedConversation(conversation);
+      }
+    },
+    [conversations]
+  );
 
-  const gitCommit = import.meta.env.VITE_GIT_COMMIT || 'dev';
-  console.log("Git commit:", import.meta.env.VITE_GIT_COMMIT);
+  const handleSwipeLeft = useCallback(() => {
+    if (selectedConversation) {
+      const currentIndex = conversations.findIndex(
+        (conv) => conv.id === selectedConversation.id
+      );
+      const nextIndex = (currentIndex + 1) % conversations.length;
+      setSelectedConversation(conversations[nextIndex]);
+    }
+  }, [selectedConversation, conversations]);
+
+  const handleSwipeRight = useCallback(() => {
+    if (selectedConversation) {
+      const currentIndex = conversations.findIndex(
+        (conv) => conv.id === selectedConversation.id
+      );
+      const prevIndex =
+        currentIndex === 0 ? conversations.length - 1 : currentIndex - 1;
+      setSelectedConversation(conversations[prevIndex]);
+    }
+  }, [selectedConversation, conversations]);
+
+  // Calculate totals
+  const totalMessages = conversations.reduce(
+    (sum, conv) => sum + conv.messageCount,
+    0
+  );
+  const totalWords = conversations.reduce(
+    (sum, conv) => sum + conv.wordCount,
+    0
+  );
+  const hasConversations = conversations.length > 0;
 
   if (selectedConversation) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
-          <ConversationDetail 
-            conversation={selectedConversation} 
-            onBack={handleBack} 
+      <TouchGestures
+        onSwipeLeft={handleSwipeLeft}
+        onSwipeRight={handleSwipeRight}
+        className="min-h-screen bg-background"
+      >
+        <div className="container mx-auto p-2 sm:p-4">
+          <ConversationDetail
+            conversation={selectedConversation}
+            onBack={handleBack}
           />
         </div>
-      </div>
+      </TouchGestures>
     );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Git commit reference in top right */}
-      <div className="absolute top-4 right-4 z-10">
-        <span className="spotify-muted text-xs">
-          {gitCommit.substring(0, 7)}
-        </span>
-      </div>
-      {/* Spotify-style gradient header */}
-      <div className="spotify-gradient">
-        <div className="container mx-auto px-6 py-12">
-          {/* Header */}
-          <div className="mb-12">
-            <div className="flex items-center space-x-8 mb-6">
-              <img src='https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Smiling%20face%20with%20hearts/3D/smiling_face_with_hearts_3d.png' width={150}></img>
+      {/* Header avec gradient */}
+      <div className="header-gradient border-b border-border">
+        <div className="container mx-auto px-2 sm:px-4 pt-3 sm:pt-4 pb-4 sm:pb-6">
+          {/* Title and Menu */}
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <img
+                src="/favicon.ico"
+                alt="Logo"
+                className="w-10 h-10 sm:w-12 sm:h-12"
+              />
               <div>
-                <h1 className="text-5xl font-bold spotify-text">
+                <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground">
                   LoversStats
                 </h1>
-                <p className="text-xl spotify-muted mt-2">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Jas la plus belle..
                 </p>
               </div>
             </div>
+            <div className="flex items-center gap-2">
+              {hasConversations && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setSearchOpen(true)}
+                  className="bg-black/20 border-white/20 text-white hover:bg-black/30"
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+              )}
+              <AppMenu />
+            </div>
           </div>
 
-          {/* Stats Summary */}
-          {conversations.length > 0 && (
-            <div className="grid md:grid-cols-3 gap-6 mb-12">
-              <div className="spotify-card rounded-xl p-6 group">
-                <div className="flex items-center space-x-4">
-                  <div className="p-3 bg-green-500/20 rounded-lg">
-                    <MessageSquare className="h-6 w-6 text-green-500" />
+          {/* Global statistics */}
+          {hasConversations && (
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+              <Card className="border border-border">
+                <CardContent className="p-2 sm:p-3 flex items-center">
+                  <div className="p-1.5 sm:p-2 bg-violet-500/20 rounded-lg mr-2 sm:mr-3">
+                    <MessagesSquare className="h-3 w-3 sm:h-4 sm:w-4 text-violet-500" />
                   </div>
                   <div>
-                    <p className="text-sm spotify-muted mb-1">Messages</p>
-                    <p className="text-2xl font-bold spotify-text">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      Messages totaux
+                    </p>
+                    <div className="text-sm sm:text-lg font-bold text-foreground">
                       {totalMessages.toLocaleString()}
-                    </p>
+                    </div>
                   </div>
-                </div>
-              </div>
-              
-              <div className="spotify-card rounded-xl p-6 group">
-                <div className="flex items-center space-x-4">
-                  <div className="p-3 bg-blue-500/20 rounded-lg">
-                    <BarChart3 className="h-6 w-6 text-blue-500" />
+                </CardContent>
+              </Card>
+
+              <Card className="border border-border">
+                <CardContent className="p-2 sm:p-3 flex items-center">
+                  <div className="p-1.5 sm:p-2 bg-pink-500/20 rounded-lg mr-2 sm:mr-3">
+                    <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 text-pink-500" />
                   </div>
                   <div>
-                    <p className="text-sm spotify-muted mb-1">Mots</p>
-                    <p className="text-2xl font-bold spotify-text">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      Mots échangés
+                    </p>
+                    <div className="text-sm sm:text-lg font-bold text-foreground">
                       {totalWords.toLocaleString()}
-                    </p>
+                    </div>
                   </div>
-                </div>
-              </div>
-              
-              <div className="spotify-card rounded-xl p-6 group">
-                <div className="flex items-center space-x-4">
-                  <div className="p-3 bg-purple-500/20 rounded-lg">
-                    <FileText className="h-6 w-6 text-purple-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm spotify-muted mb-1">Conversations</p>
-                    <p className="text-2xl font-bold spotify-text">
-                      {conversations.length}
-                    </p>
-                  </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </div>
           )}
         </div>
       </div>
 
-      {/* Content */}
-      <div className="container mx-auto py-8">
-        <div className="space-y-6">
-          <div className="mx-auto gap-4 w-[30rem]">
+      {/* Main content */}
+      <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4 space-y-4 sm:space-y-6">
+        {/* Import zone (only when no conversations) */}
+        {!hasConversations && (
+          <div className="w-full max-w-lg mx-auto">
             <FileUpload onFilesUploaded={handleFilesUploaded} />
           </div>
-          
-          {conversations.length > 0 && (
-            <ConversationList 
-              conversations={conversations} 
-              onConversationSelect={handleConversationSelect}
-              onConversationRename={handleConversationRename}
-              onConversationDelete={handleConversationDelete}
-            />
-          )}
-        </div>
+        )}
+
+        {/* Error display */}
+        {error && (
+          <Alert className="border-destructive/50 bg-destructive/20 max-w-lg mx-auto">
+            <AlertDescription className="text-destructive-foreground text-xs sm:text-sm">
+              {error}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Conversation list */}
+        <ConversationList
+          conversations={conversations}
+          onConversationSelect={handleConversationSelect}
+          onConversationRename={handleConversationRename}
+          onConversationDelete={handleConversationDelete}
+        />
       </div>
+
+      {/* Add more conversations button (only when conversations exist) */}
+      {hasConversations && (
+        <div className="fixed bottom-3 left-3 z-50">
+          <Button
+            onClick={handleFileInput}
+            className="bg-primary hover:bg-primary/90 w-10 h-10 sm:w-12 sm:h-12 rounded-full shadow-lg transition-all duration-300"
+            size="icon"
+          >
+            <Plus className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
+          </Button>
+        </div>
+      )}
+
+      {/* Delete all button (only when conversations exist) */}
+      {hasConversations && (
+        <div className="fixed bottom-3 right-3 z-50">
+          <Button
+            variant="destructive"
+            onClick={handleClearAll}
+            className="shadow-lg text-xs px-2 sm:px-3 py-1.5 sm:py-2"
+          >
+            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+            Tout supprimer
+          </Button>
+        </div>
+      )}
+
+      {/* Global Search */}
+      <GlobalSearch
+        conversations={conversations}
+        onResultSelect={handleSearchResultSelect}
+        isOpen={searchOpen}
+        onClose={() => setSearchOpen(false)}
+      />
     </div>
   );
 };

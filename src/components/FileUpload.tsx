@@ -24,25 +24,23 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFilesUploaded }) => {
         } catch (error) {
           toast({
             title: "Erreur de lecture",
-            description: `Le fichier ${file.name} n'est pas un fichier texte supporté (.txt ou .lov)`,
-            variant: "destructive"
+            description: `Impossible de lire le fichier ${file.name}`,
+            variant: "destructive",
+            duration: 5000,
           });
         }
       } else {
         toast({
           title: "Format non supporté",
-          description: `Le fichier ${file.name} n'est pas un fichier texte`,
-          variant: "destructive"
+          description: `Le fichier ${file.name} n'est pas un fichier texte supporté (.txt ou .lov)`,
+          variant: "destructive",
+          duration: 5000,
         });
       }
     }
 
     if (validFiles.length > 0) {
       onFilesUploaded(validFiles);
-      toast({
-        title: "Fichiers chargés",
-        description: `${validFiles.length} fichier(s) de conversation chargé(s) avec succès`
-      });
     }
   }, [onFilesUploaded, toast]);
 
@@ -74,10 +72,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFilesUploaded }) => {
 
   return (
     <Card className={`
-      spotify-card p-7 rounded-xl transition-all duration-300 cursor-pointer group
+      romantic-card p-4 sm:p-6 lg:p-8 rounded-xl transition-all duration-300 cursor-pointer group
       ${dragActive 
-        ? 'border-green-500 bg-green-500/5' 
-        : 'hover:border-green-500/50'
+        ? 'border-rose-500 bg-rose-500/5' 
+        : 'hover:border-rose-500/50'
       }
     `}>
       <div
@@ -97,24 +95,26 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFilesUploaded }) => {
           className="hidden"
         />
         
-        <div className="flex items-center justify-center space-x-7">
-          <div className={`w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center transition-all duration-300 ${
-            dragActive ? 'bg-green-500/20 scale-110' : 'group-hover:bg-green-500/15'
+        <div className="flex flex-col items-center justify-center space-y-3 sm:space-y-4">
+          <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-rose-500/10 flex items-center justify-center transition-all duration-300 ${
+            dragActive ? 'bg-rose-500/20 scale-110' : 'group-hover:bg-rose-500/15'
           }`}>
-            <Upload className={`h-5 w-5 transition-colors duration-300 ${
-              dragActive ? 'text-green-400' : 'text-green-500 group-hover:text-green-400'
+            <Upload className={`h-5 w-5 sm:h-6 sm:w-6 transition-colors duration-300 ${
+              dragActive ? 'text-rose-400' : 'text-rose-500 group-hover:text-rose-400'
             }`} />
           </div>
-          <div className="text-left">
-            <h3 className="font-semibold spotify-text">
+          
+          <div className="text-center">
+            <h3 className="font-semibold romantic-text text-base sm:text-lg mb-1">
               Ajouter des conversations
             </h3>
-            <p className="spotify-muted text-sm">
-              Glissez-déposez vos fichiers .lov
+            <p className="romantic-muted text-xs sm:text-sm">
+              Glissez-déposez vos fichiers .txt ou .lov
             </p>
           </div>
-          <Button size="sm" className="spotify-button">
-            <Plus className="h-4 w-4 mr-0" />
+          
+          <Button size="sm" className="romantic-button text-xs sm:text-sm px-4 sm:px-6">
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
             Parcourir
           </Button>
         </div>
