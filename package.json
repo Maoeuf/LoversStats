@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "echo \"VITE_GIT_COMMIT=$(git rev-parse --short HEAD)\" > .env.local",
-    "build": "vite build",
+    "prebuild": "echo VITE_APP_VERSION=$(git rev-parse --short HEAD) > .env.commit",
+    "build": "npm run prebuild && vite build --mode commit",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint ."
