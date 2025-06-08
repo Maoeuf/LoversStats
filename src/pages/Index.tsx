@@ -312,17 +312,18 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background select-none">
       {/* Header avec gradient */}
       <div className="header-gradient border-b border-border">
         <div className="container mx-auto px-2 sm:px-4 pt-3 sm:pt-4 pb-4 sm:pb-6">
           {/* Title and Menu */}
           <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className="flex items-center ml-3 mt-2 gap-3">
               <img
                 src="/favicon.ico"
+                draggable="false"
                 alt="Logo"
-                className="w-10 h-10 sm:w-12 sm:h-12"
+                className="select-none w-10 h-10 sm:w-12 sm:h-12"
               />
               <div>
                 <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground">
@@ -350,7 +351,7 @@ const Index = () => {
 
           {/* Global statistics */}
           {hasConversations && (
-            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            <div className="grid mx-3 grid-cols-2 gap-2 sm:gap-3">
               <Card className="border border-border">
                 <CardContent className="p-2 sm:p-3 flex items-center">
                   <div className="p-1.5 sm:p-2 bg-violet-500/20 rounded-lg mr-2 sm:mr-3">
@@ -388,10 +389,10 @@ const Index = () => {
       </div>
 
       {/* Main content */}
-      <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4 space-y-4 sm:space-y-6">
+      <div className="container justify-center px-2 sm:px-4 py-3 sm:py-4 space-y-4 sm:space-y-6">
         {/* Import zone (only when no conversations) */}
         {!hasConversations && (
-          <div className="w-full max-w-lg mx-auto">
+          <div className="mx-auto">
             <FileUpload onFilesUploaded={handleFilesUploaded} />
           </div>
         )}

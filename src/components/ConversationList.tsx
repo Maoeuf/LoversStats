@@ -122,7 +122,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6 mx-[5%]">
       <div className="flex items-center gap-3">
         <h2 className="text-xl sm:text-2xl font-bold text-foreground">
           Conversations
@@ -144,36 +144,16 @@ const ConversationList: React.FC<ConversationListProps> = ({
                 className="pb-2 sm:pb-3"
                 onClick={() => onConversationSelect(conversation)}
               >
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm sm:text-base lg:text-lg truncate group-hover:text-primary transition-colors text-foreground flex-1 mr-2">
+                <div className="flex justify-between">
+                  <CardTitle className="text-2xl sm:text-base lg:text-lg truncate group-hover:text-primary transition-colors text-foreground flex-1 mr-2">
                     {conversation.customName || conversation.name}
                   </CardTitle>
-
                   {/* Boutons modifier/supprimer à droite du titre */}
-                  <div className="flex items-center gap-1">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRename(conversation);
-                      }}
-                      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Edit2 className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={(e) => handleDelete(e, conversation.id)}
-                      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+                  <div className="space-y-2">
                     <Badge
                       className={`${getPlatformColor(
                         conversation.platform
-                      )} text-white text-xs transition-colors ml-1`}
+                      )} text-white text-xs transition-colors`}
                     >
                       {getPlatformName(conversation.platform)}
                     </Badge>
@@ -181,25 +161,47 @@ const ConversationList: React.FC<ConversationListProps> = ({
                 </div>
               </CardHeader>
 
-              <CardContent className="pt-0 space-y-2">
+              <CardContent>
                 {/* Bouton pour afficher les détails */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => toggleExpanded(e, conversation.id)}
-                  className="w-full h-6 text-xs text-muted-foreground hover:bg-accent p-1"
-                >
-                  Détails
-                  {isExpanded ? (
-                    <ChevronUp className="h-3 w-3 ml-1" />
-                  ) : (
-                    <ChevronDown className="h-3 w-3 ml-1" />
-                  )}
-                </Button>
-
+                <div className="flex gap-5 items-align  justify-between">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => toggleExpanded(e, conversation.id)}
+                    className="h-6 text-xs justify-between text-muted-foreground hover:bg-accent p-1"
+                  >
+                    Détails
+                    {isExpanded ? (
+                      <ChevronUp className="h-3 w-3 ml-1" />
+                    ) : (
+                      <ChevronDown className="h-3 w-3 ml-1" />
+                    )}
+                  </Button>
+                  <div className="flex items-center justify-end">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRename(conversation);
+                      }}
+                      className="h-6 w-6 p-0 group-hover: transition-opacity"
+                    >
+                      <Edit2 className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={(e) => handleDelete(e, conversation.id)}
+                      className="h-6 w-6 p-0 group-hover: transition-opacity hover:text-destructive"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
                 {/* Détails déroulants */}
                 {isExpanded && (
-                  <div className="space-y-2 text-xs border-t border-border pt-2">
+                  <div className="space-y-2 mt-2 text-xs border-t border-border pt-2">
                     <div className="grid grid-cols-2 gap-2">
                       <div className="flex items-center space-x-1">
                         <MessageSquare className="h-3 w-3 text-blue-500" />
