@@ -20,6 +20,7 @@ import {
   Moon,
   Sun,
   Heart,
+  HeartPlus,
   Music,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -31,6 +32,7 @@ const AppMenu: React.FC = () => {
 
   const themes = [
     { id: "love", name: "Love", icon: Heart, color: "text-rose-500" },
+    { id: "loveplus", name: "Love +", icon: HeartPlus, color: "text-blue-500" },
     { id: "dark", name: "Dark", icon: Moon, color: "text-gray-600" },
     { id: "light", name: "Light", icon: Sun, color: "text-yellow-500" },
     { id: "spotify", name: "Spotify", icon: Music, color: "text-green-500" },

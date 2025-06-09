@@ -9,7 +9,6 @@ import Index from "./pages/Index";
 import Statistics from "./pages/Statistics";
 import Stories from "./pages/Stories";
 import About from "./pages/About";
-import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -25,7 +24,7 @@ const App = () => (
             <Route path="/statistics" element={<Statistics />} />
             <Route path="/stories" element={<Stories />} />
             <Route path="/about" element={<About />} />
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={<Index />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

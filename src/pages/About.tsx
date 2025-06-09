@@ -1,135 +1,146 @@
-
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, Github, Mail, Coffee } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React from "react";
+import { ArrowLeft, Github, Heart, Code, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 const About: React.FC = () => {
   const navigate = useNavigate();
 
+  const handleBack = () => {
+    navigate("/");
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-4 max-w-2xl">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
+      <div className="container mx-auto  p-4 space-y-6">
+        <div className="flex items-center gap-4 mb-6">
           <Button
             variant="outline"
+            onClick={handleBack}
             size="sm"
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2"
+            className="justify-center w-full"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Retour
           </Button>
-          <h1 className="text-2xl font-bold">À propos</h1>
         </div>
 
-        <div className="space-y-6">
-          {/* App Info */}
+        <div className="max-w-4xl mx-auto space-y-8">
+          {/* Header */}
+          <div className="text-center space-y-4">
+            <div className="flex items-center justify-center gap-3">
+              <img
+                src="/favicon.ico"
+                alt="LoversStats Logo"
+                className="w-16 h-16"
+              />
+              <div className="text-left">
+                <h1 className="text-4xl font-bold text-foreground">
+                  LoversStats
+                </h1>
+                <p className="text-sm md:text-xl text-muted-foreground">
+                  Analysez vos conversations avec style
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Description */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Heart className="h-5 w-5 text-rose-500" />
+                <Heart className="h-5 w-5 text-primary" />À propos de
                 LoversStats
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                LoversStats est une application qui vous permet d'analyser vos conversations 
-                WhatsApp, Instagram et Discord pour découvrir des statistiques fascinantes 
-                sur vos échanges.
+              <p className="text-muted-foreground leading-relaxed">
+                LoversStats est une application web moderne conçue pour analyser
+                et visualiser vos conversations de manière élégante et privée.
+                Que ce soit WhatsApp, Instagram, Discord ou SMS, découvrez des
+                insights fascinants sur vos échanges.
               </p>
-              
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <p className="text-muted-foreground leading-relaxed">
+                Toutes vos données restent locales sur votre appareil - aucune
+                information n'est envoyée sur nos serveurs. Votre vie privée est
+                notre priorité.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Informations techniques */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Informations techniques</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <span className="font-medium">Version:</span>
-                  <span className="ml-2 text-muted-foreground">
-                    {import.meta.env.VITE_APP_VERSION || 'dev-1.0.0'}
-                  </span>
+                  <h4 className="font-semibold mb-2">Technologies utilisées</h4>
+                  <div className="space-y-1 text-sm text-muted-foreground">
+                    <p>• React 18 avec TypeScript</p>
+                    <p>• Tailwind CSS pour le design</p>
+                    <p>• Recharts pour les graphiques</p>
+                    <p>• Radix UI pour les composants</p>
+                  </div>
                 </div>
                 <div>
-                  <span className="font-medium">Dernière mise à jour:</span>
-                  <span className="ml-2 text-muted-foreground">
-                    {new Date().toLocaleDateString('fr-FR')}
-                  </span>
+                  <h4 className="font-semibold mb-2">
+                    Sécurité & Confidentialité
+                  </h4>
+                  <div className="space-y-1 text-sm text-muted-foreground">
+                    <p>• Traitement local uniquement</p>
+                    <p>• Aucune donnée envoyée en ligne</p>
+                    <p>• Code source ouvert</p>
+                    <p>• Chiffrement des données stockées</p>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Features */}
+          {/* GitHub Link */}
           <Card>
             <CardHeader>
-              <CardTitle>Fonctionnalités</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Github className="h-5 w-5 text-primary" />
+                Code source
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Import de conversations WhatsApp, Instagram et Discord</li>
-                <li>• Statistiques détaillées (messages, mots, participants)</li>
-                <li>• Visualisations graphiques interactives</li>
-                <li>• Mode Stories pour des analyses animées</li>
-                <li>• Thèmes personnalisables (Love, Dark, Light, Spotify)</li>
-                <li>• Export des données en PDF</li>
-                <li>• Interface responsive optimisée mobile</li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          {/* Privacy */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Confidentialité</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Vos données restent entièrement privées :
-              </p>
-              <ul className="space-y-1 text-sm text-muted-foreground">
-                <li>• Tout est traité localement sur votre appareil</li>
-                <li>• Aucune donnée n'est envoyée sur des serveurs externes</li>
-                <li>• Stockage local dans votre navigateur uniquement</li>
-                <li>• Vous gardez le contrôle total de vos conversations</li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          {/* Support */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Support & Contact</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
-                  <Github className="h-4 w-4" />
-                  GitHub
-                </Button>
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  Contact
-                </Button>
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
-                  <Coffee className="h-4 w-4" />
-                  Buy me a coffee
+              <div className="items-center">
+                <div>
+                  <p className="text-muted-foreground mb-4">
+                    LoversStats est un projet open-source. Contribuez, signalez
+                    des bugs ou proposez des améliorations sur GitHub.
+                  </p>
+                </div>
+                <Button asChild className="flex items-center gap-2">
+                  <a
+                    href="https://github.com/Maoeuf/LoversStats"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Github className="h-4 w-4" />
+                    Voir sur GitHub
+                  </a>
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Credits */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Remerciements</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Développé avec ❤️ pour Jas et Mao.
-                <br />
-                Merci aux communautés open-source : React, Tailwind CSS, Radix UI, Lucide Icons.
-              </p>
-            </CardContent>
-          </Card>
+          {/* Footer */}
+          <div className="text-center text-sm text-muted-foreground">
+            <p>
+              Fait avec <Heart className="h-4 w-4 inline text-red-500" /> par
+              Maoeuf
+            </p>
+            <p className="mt-2">
+              Version {import.meta.env.VITE_APP_VERSION || "dev-1.0.0"}
+            </p>
+          </div>
         </div>
       </div>
     </div>

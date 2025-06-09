@@ -35,9 +35,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
     isOpen: false,
     conversation: null,
   });
-  const [expandedConversations, setExpandedConversations] = useState<
-    Set<string>
-  >(new Set());
+  const [expandedConversations, setExpandedConversations] = useState<Set<string>>(new Set());
 
   const getPlatformColor = (platform: string) => {
     switch (platform) {
@@ -47,6 +45,8 @@ const ConversationList: React.FC<ConversationListProps> = ({
         return "bg-pink-600 hover:bg-pink-700";
       case "discord":
         return "bg-indigo-600 hover:bg-indigo-700";
+      case "sms":
+        return "bg-blue-600 hover:bg-blue-700";
       default:
         return "bg-gray-600 hover:bg-gray-700";
     }
@@ -60,6 +60,8 @@ const ConversationList: React.FC<ConversationListProps> = ({
         return "Instagram";
       case "discord":
         return "Discord";
+      case "sms":
+        return "SMS";
       default:
         return "Inconnu";
     }
@@ -144,31 +146,25 @@ const ConversationList: React.FC<ConversationListProps> = ({
                 className="pb-2 sm:pb-3"
                 onClick={() => onConversationSelect(conversation)}
               >
-                <div className="flex justify-between">
-                  <CardTitle className="text-2xl sm:text-base lg:text-lg truncate group-hover:text-primary transition-colors text-foreground flex-1 mr-2">
+                <div className="flex items-center justify-between mb-3">
+                  <CardTitle className="text-sm sm:text-base lg:text-lg truncate group-hover:text-primary transition-colors text-foreground">
                     {conversation.customName || conversation.name}
                   </CardTitle>
-                  {/* Boutons modifier/supprimer à droite du titre */}
-                  <div className="space-y-2">
-                    <Badge
-                      className={`${getPlatformColor(
-                        conversation.platform
-                      )} text-white text-xs transition-colors`}
-                    >
-                      {getPlatformName(conversation.platform)}
-                    </Badge>
-                  </div>
+                  <Badge
+                    className={`${getPlatformColor(
+                      conversation.platform
+                    )} text-white text-xs transition-colors`}
+                  >
+                    {getPlatformName(conversation.platform)}
+                  </Badge>
                 </div>
-              </CardHeader>
-
-              <CardContent>
-                {/* Bouton pour afficher les détails */}
-                <div className="flex gap-5 items-align  justify-between">
+                
+                <div className="flex items-center justify-between">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={(e) => toggleExpanded(e, conversation.id)}
-                    className="h-6 text-xs justify-between text-muted-foreground hover:bg-accent p-1"
+                    className="h-6 text-xs text-muted-foreground hover:bg-accent p-1"
                   >
                     Détails
                     {isExpanded ? (
@@ -177,31 +173,34 @@ const ConversationList: React.FC<ConversationListProps> = ({
                       <ChevronDown className="h-3 w-3 ml-1" />
                     )}
                   </Button>
-                  <div className="flex items-center justify-end">
+                  
+                  <div className="flex items-center gap-1">
                     <Button
                       size="sm"
-                      variant="ghost"
+                      variant="outline"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRename(conversation);
                       }}
-                      className="h-6 w-6 p-0 group-hover: transition-opacity"
+                      className="h-6 px-2 text-xs"
                     >
                       <Edit2 className="h-3 w-3" />
                     </Button>
                     <Button
                       size="sm"
-                      variant="ghost"
+                      variant="outline"
                       onClick={(e) => handleDelete(e, conversation.id)}
-                      className="h-6 w-6 p-0 group-hover: transition-opacity hover:text-destructive"
+                      className="h-6 px-2 text-xs hover:text-destructive hover:border-destructive"
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
                 </div>
-                {/* Détails déroulants */}
+              </CardHeader>
+
+              <CardContent>
                 {isExpanded && (
-                  <div className="space-y-2 mt-2 text-xs border-t border-border pt-2">
+                  <div className="space-y-2 text-xs border-t border-border pt-2">
                     <div className="grid grid-cols-2 gap-2">
                       <div className="flex items-center space-x-1">
                         <MessageSquare className="h-3 w-3 text-blue-500" />
@@ -221,9 +220,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
 
                       <div className="flex items-center space-x-1">
                         <Users className="h-3 w-3 text-violet-500" />
-                        <span className="text-muted-foreground">
-                          Participants
-                        </span>
+                        <span className="text-muted-foreground">Participants</span>
                       </div>
                       <div className="font-semibold text-violet-400">
                         {conversation.participants.length}
@@ -233,9 +230,8 @@ const ConversationList: React.FC<ConversationListProps> = ({
                         <Calendar className="h-3 w-3 text-orange-500" />
                         <span className="text-muted-foreground">Période</span>
                       </div>
-                      <div className="text-muted-foreground text-xs">
-                        {formatDate(conversation.startDate)} -{" "}
-                        {formatDate(conversation.endDate)}
+                      <div className="text-muted-foreground text-xs col-span-2">
+                        {formatDate(conversation.startDate)} - {formatDate(conversation.endDate)}
                       </div>
                     </div>
                   </div>

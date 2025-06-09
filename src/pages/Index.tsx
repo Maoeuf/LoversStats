@@ -389,7 +389,7 @@ const Index = () => {
       </div>
 
       {/* Main content */}
-      <div className="container justify-center px-2 sm:px-4 py-3 sm:py-4 space-y-4 sm:space-y-6">
+      <div className="container justify-center px-2 sm:px-4 py-3 sm:py-4 space-y-4 sm:space-y-6 no-scrollbar overflow-y-auto">
         {/* Import zone (only when no conversations) */}
         {!hasConversations && (
           <div className="mx-auto">
@@ -415,29 +415,28 @@ const Index = () => {
         />
       </div>
 
-      {/* Add more conversations button (only when conversations exist) */}
+      {/* Add conversation button (only when conversations exist) */}
       {hasConversations && (
-        <div className="fixed bottom-3 left-3 z-50">
+        <div className="fixed bottom-[80px] sm:bottom-[50%] right-[-5px] sm:left-[-5px] z-50 pointer-events-none">
           <Button
+            variant="default"
             onClick={handleFileInput}
-            className="bg-primary hover:bg-primary/90 w-10 h-10 sm:w-12 sm:h-12 rounded-full shadow-lg transition-all duration-300"
-            size="icon"
+            className="pl-3 pr-4 sm:pl-4 sm:pr-3 pointer-events-auto"
           >
-            <Plus className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </div>
       )}
 
       {/* Delete all button (only when conversations exist) */}
       {hasConversations && (
-        <div className="fixed bottom-3 right-3 z-50">
+        <div className="fixed bottom-[30px] sm:bottom-[50%] right-[-5px] z-50 pointer-events-none">
           <Button
-            variant="destructive"
+            variant="default"
             onClick={handleClearAll}
-            className="shadow-lg text-xs px-2 sm:px-3 py-1.5 sm:py-2"
+            className="pl-3 pr-4 pointer-events-auto"
           >
-            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-            Tout supprimer
+            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </div>
       )}

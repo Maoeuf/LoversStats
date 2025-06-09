@@ -1,4 +1,3 @@
-
 import { Conversation, Message } from './conversationParser';
 
 export interface TimelineData {
@@ -234,4 +233,16 @@ export class ConversationAnalytics {
 
     return participantStats;
   }
+}
+
+// Add the missing calculateAnalytics function
+export function calculateAnalytics(conversations: Conversation[]) {
+  return {
+    timeline: ConversationAnalytics.generateTimeline(conversations),
+    hourlyActivity: ConversationAnalytics.generateHourlyActivity(conversations),
+    emotionalTrends: ConversationAnalytics.analyzeEmotions(conversations),
+    wordFrequency: ConversationAnalytics.generateWordCloud(conversations),
+    participantStats: ConversationAnalytics.getParticipantActivity(conversations),
+    totalDays: conversations.length > 0 ? Math.ceil((new Date().getTime() - new Date(conversations[0].messages[0]?.timestamp || 0).getTime()) / (1000 * 60 * 60 * 24)) : 0
+  };
 }

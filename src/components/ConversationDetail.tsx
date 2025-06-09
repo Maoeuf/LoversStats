@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from "react";
 import {
   ArrowLeft,
@@ -11,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Image } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import ConversationPDFExporter from "@/components/ConversationPDFExporter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import MessageExporter from "@/components/MessageExporter";
@@ -29,7 +29,6 @@ const ConversationDetail: React.FC<ConversationDetailProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [showStats, setShowStats] = useState(false);
   const [messageExporterOpen, setMessageExporterOpen] = useState(false);
-  useState<Conversation | null>(null);
 
   const stats = useMemo(() => {
     return ConversationParser.calculateStats(conversation);
@@ -92,46 +91,54 @@ const ConversationDetail: React.FC<ConversationDetailProps> = ({
     return Math.round(conversation.messageCount / duration);
   }, [conversation.messageCount, duration]);
 
+  const getPlatformName = (platform: string) => {
+    switch (platform) {
+      case "whatsapp":
+        return "WhatsApp";
+      case "instagram":
+        return "Instagram";
+      case "discord":
+        return "Discord";
+      case "sms":
+        return "SMS";
+      default:
+        return "Inconnu";
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="space-y-3 mb-4">
-        {/* Boutons toujours au-dessus du titre */}
-        <div className="flex items-center justify-between">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onBack}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Retour
-          </Button>
-        </div>
-      </div>
-      <div className="flex items-center space-x-4 justify-center">
-        <div>
-          <h1 className="text-2xl font-bold spotify-text text-center">
-            {conversation.customName || conversation.name}
-          </h1>
-          <div className="flex items-center space-x-2 mt-1">
+      <div className="flex items-start justify-between gap-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onBack}
+          className="flex items-center gap-2 flex-shrink-0 h-auto py-5"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-start gap-2 mb-1">
+            <h1 className="text-xl font-bold text-foreground truncate">
+              {conversation.customName || conversation.name}
+            </h1>
             <Badge
               className={`${getPlatformColor(
                 conversation.platform
-              )} text-white`}
+              )} text-white text-xs flex-shrink-0`}
             >
-              {conversation.platform.charAt(0).toUpperCase() +
-                conversation.platform.slice(1)}
+              {getPlatformName(conversation.platform)}
             </Badge>
-            <span className="text-sm spotify-muted">
-              {conversation.messageCount} messages • {conversation.wordCount}{" "}
-              mots
-            </span>
+          </div>
+          <div className="text-sm text-muted-foreground text-left">
+            {conversation.messageCount} messages • {conversation.wordCount} mots • {duration} jours
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-        <ConversationPDFExporter conversation={conversation} />
+
+      <div className="grid grid-cols-2 gap-3 mb-4">
         <Button
           variant="outline"
           size="sm"
@@ -153,7 +160,6 @@ const ConversationDetail: React.FC<ConversationDetailProps> = ({
       </div>
 
       {/* STATISTIQUES */}
-
       {showStats && (
         <Card className="romantic-card">
           <CardHeader>
